@@ -77,7 +77,8 @@ for (const block of blocks) {
     const transitions = lines[5].trim() ? lines[5].trim().split(/\s+/).map(Number) : [];
     const rects = lines[6].trim() ? lines[6].trim().split(/\s+/).map(s => {
         const [x, y] = s.split(',').map(Number);
-        return { x, y };
+        var scaledY = y * 1.5;
+        return { x, y: scaledY };
     }) : [];
 
     const el = document.createElement('div');
