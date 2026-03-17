@@ -1,4 +1,6 @@
-            
+
+const ELEMENT_BASELINE_COLOR = '#b1b1b1'; // light gray
+const ELEMENT_BASELINE_WIDTH = 0.2; // px (thickness of the line)
 
 const ELEMENT_HEIGHT = 150;
 
@@ -86,10 +88,39 @@ for (const block of blocks) {
     el.style.width = 'calc(' + ELEMENT_END + ' - ' + ELEMENT_START + ')';
     el.style.marginBottom = ELEMENT_GAP + 'px';
 
+
     // Inner container for clipping bands and lines
     const inner = document.createElement('div');
     inner.className = 'element-inner';
     el.appendChild(inner);
+
+    // ...existing code for background and vertical lines...
+
+    // Baseline (horizontal line above bg on and vertical lines)
+    const baseline = document.createElement('div');
+    baseline.style.position = 'absolute';
+    baseline.style.left = 0;
+    baseline.style.width = '100%';
+    baseline.style.top = '50%';
+    baseline.style.transform = 'translateY(-50%)';
+    baseline.style.height = ELEMENT_BASELINE_WIDTH + 'px';
+    baseline.style.background = ELEMENT_BASELINE_COLOR;
+    baseline.style.zIndex = 1;
+    inner.appendChild(baseline);
+
+    // Vertical lines at 8h, 12h, 16h, 20h (same color/width as baseline)
+    [8, 12, 16, 20].forEach(hour => {
+        const vline = document.createElement('div');
+        vline.style.position = 'absolute';
+        vline.style.top = 0;
+        vline.style.height = '100%';
+        vline.style.left = hourToPercent(hour) + '%';
+        vline.style.width = ELEMENT_BASELINE_WIDTH + 'px';
+        vline.style.background = ELEMENT_BASELINE_COLOR;
+        vline.style.transform = 'translateX(-50%)';
+        vline.style.zIndex = 1;
+        inner.appendChild(vline);
+    });
 
     // Background bands (hard transitions)
     let bgColor = COLOR_BG_OFF;
