@@ -115,18 +115,47 @@ for (const block of blocks) {
     baseline.style.zIndex = 1;
     inner.appendChild(baseline);
 
-    // Vertical lines at 8h, 12h, 16h, 20h (same color/width as baseline)
+    // Triangles at 8h, 12h, 16h, 20h (downward, anchored at top)
     [8, 12, 16, 20].forEach(hour => {
-        const vline = document.createElement('div');
-        vline.style.position = 'absolute';
-        vline.style.top = 0;
-        vline.style.height = '100%';
-        vline.style.left = hourToPercent(hour) + '%';
-        vline.style.width = ELEMENT_BASELINE_WIDTH + 'px';
-        vline.style.background = ELEMENT_BASELINE_COLOR;
-        vline.style.transform = 'translateX(-50%)';
-        vline.style.zIndex = 1;
-        inner.appendChild(vline);
+        const base = 8; // px, 50% wider than previous 18px
+        const height = 5; // px
+        const curvature = 0.001;
+        // SVG path for triangle with both visible sides curved inward
+        // Points: A (0,0), B (base,0), C (base/2,height)
+        // Both AB and BC are quadratic Beziers curving inward
+        function curvedTrianglePath() {
+            const cy = height * curvature;
+            const cx1 = base * 0.25, cx2 = base * 0.75;
+            return `M0,0 Q${cx1},${cy} ${base/2},${height} Q${cx2},${cy} ${base},0 Z`;
+        }
+        // Top triangle (downward)
+        const svgTop = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgTop.setAttribute('width', base);
+        svgTop.setAttribute('height', height);
+        svgTop.style.position = 'absolute';
+        svgTop.style.left = `calc(${hourToPercent(hour)}% - ${base/2}px)`;
+        svgTop.style.top = '0';
+        svgTop.style.zIndex = 3;
+        const pathTop = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathTop.setAttribute('d', curvedTrianglePath());
+        pathTop.setAttribute('fill', 'black');
+        svgTop.appendChild(pathTop);
+        inner.appendChild(svgTop);
+
+        // Bottom triangle (upward, mirrored)
+        const svgBot = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgBot.setAttribute('width', base);
+        svgBot.setAttribute('height', height);
+        svgBot.style.position = 'absolute';
+        svgBot.style.left = `calc(${hourToPercent(hour)}% - ${base/2}px)`;
+        svgBot.style.bottom = '0';
+        svgBot.style.zIndex = 3;
+        svgBot.style.transform = 'scaleY(-1)';
+        const pathBot = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathBot.setAttribute('d', curvedTrianglePath());
+        pathBot.setAttribute('fill', 'black');
+        svgBot.appendChild(pathBot);
+        inner.appendChild(svgBot);
     });
 
     // Background bands (hard transitions)
@@ -268,6 +297,7 @@ for (const block of blocks) {
         dot.style.height = POINT_SIZE + 'px';
         dot.style.background = COLOR_POINT_FILL;
         dot.style.borderColor = COLOR_POINT_BORDER;
+        dot.style.zIndex = 99;
         el.appendChild(dot);
     });
 
