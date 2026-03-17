@@ -220,24 +220,22 @@ for (const block of blocks) {
 
         // Defer SVG rendering until after layout is complete
         requestAnimationFrame(() => {
+            // Use the actual rendered width of the element for the SVG
             const elWidthPx = el.getBoundingClientRect().width;
+            const EXTRA = 20; // px, how much to extend past each edge
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('width', elWidthPx);
+            svg.setAttribute('width', elWidthPx + EXTRA * 2);
             svg.setAttribute('height', ELEMENT_HEIGHT);
-            svg.setAttribute('viewBox', `0 0 ${elWidthPx} ${ELEMENT_HEIGHT}`);
+            svg.setAttribute('viewBox', `0 0 ${elWidthPx + EXTRA * 2} ${ELEMENT_HEIGHT}`);
             svg.style.position = 'absolute';
-            svg.style.left = 0;
+            svg.style.left = `-${EXTRA}px`;
             svg.style.top = 0;
-            svg.style.width = '100%';
+            svg.style.width = `calc(100% + ${EXTRA * 2}px)`;
             svg.style.height = '100%';
             svg.style.zIndex = 2;
-            // Extend lines slightly beyond 7 and 24 to reach rounded ends
-            const EXTEND_FRAC = -0.012; // ~1.2% of width on each side
             function hourToPixel(h) {
-                // Map 7 to a bit before 0, 24 to a bit after width
-                const minH = 7 - (24 - 7) * EXTEND_FRAC;
-                const maxH = 24 + (24 - 7) * EXTEND_FRAC;
-                return ((h - minH) / (maxH - minH)) * elWidthPx;
+                // Map hour 7 to x=0, hour 24 to x=elWidthPx+EXTRA*2
+                return ((h - 7) / (24 - 7)) * (elWidthPx + EXTRA * 2);
             }
             // Cubic Bezier path for smooth lines
             let d = '';
