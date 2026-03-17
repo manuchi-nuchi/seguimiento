@@ -83,15 +83,22 @@ for (const block of blocks) {
     const el = document.createElement('div');
     el.className = 'element';
     el.style.height = ELEMENT_HEIGHT + 'px';
+    el.style.position = 'relative';
     el.style.marginLeft = ELEMENT_START;
     el.style.marginRight = 'calc(100vw - ' + ELEMENT_END + ')';
     el.style.width = 'calc(' + ELEMENT_END + ' - ' + ELEMENT_START + ')';
+    el.style.minWidth = '600px'; // Ensure enough width for SVG
     el.style.marginBottom = ELEMENT_GAP + 'px';
 
 
     // Inner container for clipping bands and lines
     const inner = document.createElement('div');
     inner.className = 'element-inner';
+    inner.style.width = '100%';
+    inner.style.height = '100%';
+    inner.style.position = 'absolute';
+    inner.style.left = 0;
+    inner.style.top = 0;
     el.appendChild(inner);
 
     // ...existing code for background and vertical lines...
@@ -145,20 +152,92 @@ for (const block of blocks) {
         inner.appendChild(vline);
     }
 
-    // 3 horizontal lines positioned by value (0=bottom, 10=top)
-    const colors = [COLOR_LINE_1, COLOR_LINE_2, COLOR_LINE_3];
-    colors.forEach((color, idx) => {
-        const val = parseFloat(lines[1 + idx].trim()) || 0;
-        const yPx = ELEMENT_HEIGHT * (1 - val / 10);
-        const line = document.createElement('div');
-        line.className = 'h-line';
-        line.style.top = yPx + 'px';
-        line.style.height = LINE_THICKNESS + 'px';
-        line.style.backgroundColor = color;
-        line.style.boxShadow = '';
-        line.style.border = '2px solid #000';
-        inner.appendChild(line);
-    });
+    // 3 colored lines as hour,value pairs (drawn as SVG polylines)
+    const lineColors = [COLOR_LINE_1, COLOR_LINE_2, COLOR_LINE_3];
+    for (let idx = 0; idx < 3; idx++) {
+        const lineData = lines[1 + idx].trim();
+        if (!lineData) continue;
+        let points;
+        if (/^\d+(\.\d+)?$/.test(lineData)) {
+            // Single number, treat as flat line from firsthour to lasthour
+            const v = parseFloat(lineData);
+            points = [
+                { h: 7, v },
+                { h: 24, v }
+            ];
+        } else {
+            points = lineData.split(/\s+/).map(pair => {
+                if (pair.includes(',')) {
+                    const [h, v] = pair.split(',').map(Number);
+                    return { h, v };
+                }
+                return null;
+            }).filter(Boolean);
+        }
+        if (points.length < 1) continue;
+        // Ensure first point at 7h
+        if (points[0].h > 7) {
+            points.unshift({ h: 7, v: points[0].v });
+        } else if (points[0].h < 7) {
+            points[0].h = 7;
+        }
+        // Ensure last point at 24h
+        if (points[points.length - 1].h < 24) {
+            points.push({ h: 24, v: points[points.length - 1].v });
+        } else if (points[points.length - 1].h > 24) {
+            points[points.length - 1].h = 24;
+        }
+        if (points.length < 2) continue;
+
+        // Defer SVG rendering until after layout is complete
+        requestAnimationFrame(() => {
+            const elWidthPx = el.getBoundingClientRect().width;
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', elWidthPx);
+            svg.setAttribute('height', ELEMENT_HEIGHT);
+            svg.setAttribute('viewBox', `0 0 ${elWidthPx} ${ELEMENT_HEIGHT}`);
+            svg.style.position = 'absolute';
+            svg.style.left = 0;
+            svg.style.top = 0;
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.zIndex = 2;
+            // Extend lines slightly beyond 7 and 24 to reach rounded ends
+            const EXTEND_FRAC = -0.012; // ~1.2% of width on each side
+            function hourToPixel(h) {
+                // Map 7 to a bit before 0, 24 to a bit after width
+                const minH = 7 - (24 - 7) * EXTEND_FRAC;
+                const maxH = 24 + (24 - 7) * EXTEND_FRAC;
+                return ((h - minH) / (maxH - minH)) * elWidthPx;
+            }
+            let d = '';
+            points.forEach((pt, i) => {
+                const x = hourToPixel(pt.h);
+                const y = ELEMENT_HEIGHT * (1 - pt.v / 10);
+                d += (i === 0 ? 'M' : 'L') + x + ' ' + y + ' ';
+            });
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', d.trim());
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', lineColors[idx]);
+            path.setAttribute('stroke-width', LINE_THICKNESS);
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            path.setAttribute('stroke', '#000');
+            path.setAttribute('stroke-opacity', '0.25');
+            svg.appendChild(path);
+            // Overlay the colored stroke
+            const colorPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            colorPath.setAttribute('d', d.trim());
+            colorPath.setAttribute('fill', 'none');
+            colorPath.setAttribute('stroke', lineColors[idx]);
+            colorPath.setAttribute('stroke-width', LINE_THICKNESS - 2);
+            colorPath.setAttribute('stroke-linecap', 'round');
+            colorPath.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(colorPath);
+            inner.appendChild(svg);
+        });
+    }
 
     // Points (white circles, black outline)
     points.forEach(p => {
