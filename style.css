@@ -1,0 +1,64 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: sans-serif;
+    background: #fff0de;
+}
+.element {
+    position: relative;
+    overflow: visible;
+    border: 2px solid black;
+    border-radius: 65px;
+    background: transparent;
+}
+.element-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.element-label {
+    position: absolute;
+    left: 0;
+    width: var(--element-label-width, 5vw);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    font-weight: bold;
+    z-index: 10;
+    padding: 2px 8px;
+    border-radius: 3px;
+    pointer-events: none;
+}
+.bg-band {
+    position: absolute;
+    top: 0;
+    height: 100%;
+}
+.h-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    z-index: 2;
+}
+.v-line {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transform: translateX(-50%);
+    z-index: 0;
+}
+.illness-svg {
+    position: absolute;
+    z-index: 1;
+}
+.point {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid;
+    transform: translateX(-50%);
+    z-index: 2;
+}
