@@ -210,12 +210,31 @@ for (const block of blocks) {
                 const maxH = 24 + (24 - 7) * EXTEND_FRAC;
                 return ((h - minH) / (maxH - minH)) * elWidthPx;
             }
+            // Cubic Bezier path for smooth lines
             let d = '';
-            points.forEach((pt, i) => {
-                const x = hourToPixel(pt.h);
-                const y = ELEMENT_HEIGHT * (1 - pt.v / 10);
-                d += (i === 0 ? 'M' : 'L') + x + ' ' + y + ' ';
-            });
+            for (let i = 0; i < points.length; i++) {
+                const x = hourToPixel(points[i].h);
+                const y = ELEMENT_HEIGHT * (1 - points[i].v / 10);
+                if (i === 0) {
+                    d += `M${x},${y} `;
+                } else {
+                    // Calculate control points for smooth cubic Bezier
+                    const prev = points[i - 1];
+                    const prevX = hourToPixel(prev.h);
+                    const prevY = ELEMENT_HEIGHT * (1 - prev.v / 10);
+                    const next = points[i + 1] || points[i];
+                    const nextX = hourToPixel(next.h);
+                    // Horizontal distance to neighbors
+                    const dx1 = (x - prevX) / 2;
+                    const dx2 = (nextX - prevX) / 6;
+                    // Control points: smooth but not too wavy
+                    const c1x = prevX + dx2;
+                    const c1y = prevY;
+                    const c2x = x - dx2;
+                    const c2y = y;
+                    d += `C${c1x},${c1y} ${c2x},${c2y} ${x},${y} `;
+                }
+            }
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', d.trim());
             path.setAttribute('fill', 'none');
