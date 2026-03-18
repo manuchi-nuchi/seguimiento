@@ -64,6 +64,13 @@ function roundedPolygonPath(points, radii) {
 }
 
 
+const GOOGLE_DOC_URL = 'https://docs.google.com/document/d/1bFv__rkfud3QeKkt3E_FrutASBv4vxwb8HY1B9-zu6c/export?format=txt';
+
+async function init() {
+    let DATA;
+    const res = await fetch(GOOGLE_DOC_URL);
+    DATA = await res.text();
+
 const blocks = DATA.trim().split('---');
 const container = document.getElementById('container');
 container.style.marginTop = TOP_MARGIN + 'px';
@@ -387,3 +394,6 @@ for (const block of blocks) {
     label.style.zIndex = 10;
     container.appendChild(label);
 }
+}
+
+init();
