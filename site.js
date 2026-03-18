@@ -85,8 +85,6 @@ for (const block of blocks) {
         const parts = s.split(',');
         const [x, y, z] = parts.slice(0, 3).map(Number);
         let w = parts[3] || '';
-        w = w.replace(/^['"`”’]|['"`”’]$/g, '');  // Remove leading/trailing quotes or backticks
-        console.log(w);
         return { start: x, end: y, opacity: z / 100, topic: w };
     }) : [];
     const rects = lines[6].trim() ? lines[6].trim().split(/\s+/).map(s => {
