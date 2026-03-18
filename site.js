@@ -195,7 +195,7 @@ for (const block of blocks) {
         tooltip.style.background = '#333';
         tooltip.style.color = '#fff';
         tooltip.style.padding = '8px 12px';
-        tooltip.style.borderRadius = '4px';
+        tooltip.style.borderRadius = '999px';
         tooltip.style.fontSize = '14px';
         tooltip.style.pointerEvents = 'none';
         tooltip.style.zIndex = 1000;
@@ -204,7 +204,6 @@ for (const block of blocks) {
         tooltip.textContent = session.topic.replace(/['"`]/g, '');
 
         rect.addEventListener('mouseover', () => {
-            console.log('a', session.topic);
             tooltip.style.display = 'block';
         });
 
@@ -214,7 +213,6 @@ for (const block of blocks) {
         });
 
         rect.addEventListener('mouseout', () => {
-            console.log('b', session.topic);
             tooltip.style.display = 'none';
         });
 
