@@ -82,8 +82,12 @@ for (const block of blocks) {
     // lines[1], [2], [3]: pink, blue, orange lines (content ignored)
     const points = lines[4].trim() ? lines[4].trim().split(/\s+/).map(Number) : [];
     const workSessions = lines[5].trim() ? lines[5].trim().split(/\s+/).map(s => {
-        const [x, y, z] = s.split(',').map(Number);
-        return { start: x, end: y, opacity: z / 100 };
+        const parts = s.split(',');
+        const [x, y, z] = parts.slice(0, 3).map(Number);
+        let w = parts[3] || '';
+        w = w.replace(/^['"`”’]|['"`”’]$/g, '');  // Remove leading/trailing quotes or backticks
+        console.log(w);
+        return { start: x, end: y, opacity: z / 100, topic: w };
     }) : [];
     const rects = lines[6].trim() ? lines[6].trim().split(/\s+/).map(s => {
         const [x, y] = s.split(',').map(Number);
@@ -182,7 +186,39 @@ for (const block of blocks) {
         rect.style.height = '100%';
         rect.style.backgroundColor = COLOR_WORK_SESSION;
         rect.style.opacity = session.opacity;
-        rect.style.zIndex = 1;
+        rect.style.zIndex = 10;
+        rect.style.cursor = 'pointer';
+
+        // Tooltip for topic
+        const tooltip = document.createElement('div');
+        tooltip.style.position = 'fixed';
+        tooltip.style.background = '#333';
+        tooltip.style.color = '#fff';
+        tooltip.style.padding = '8px 12px';
+        tooltip.style.borderRadius = '4px';
+        tooltip.style.fontSize = '14px';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.zIndex = 1000;
+        tooltip.style.display = 'none';
+        tooltip.style.whiteSpace = 'nowrap';
+        tooltip.textContent = session.topic.replace(/['"`]/g, '');
+
+        rect.addEventListener('mouseover', () => {
+            console.log('a', session.topic);
+            tooltip.style.display = 'block';
+        });
+
+        rect.addEventListener('mousemove', (e) => {
+            tooltip.style.left = (e.clientX + 10) + 'px';
+            tooltip.style.top = (e.clientY + 10) + 'px';
+        });
+
+        rect.addEventListener('mouseout', () => {
+            console.log('b', session.topic);
+            tooltip.style.display = 'none';
+        });
+
+        document.body.appendChild(tooltip);
         inner.appendChild(rect);
     }
 
