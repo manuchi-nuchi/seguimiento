@@ -286,7 +286,8 @@ for (const block of blocks) {
             svg.style.top = 0;
             svg.style.width = `calc(100% + ${EXTRA * 2}px)`;
             svg.style.height = '100%';
-            svg.style.zIndex = 2;
+            svg.style.zIndex = 20;
+            svg.style.pointerEvents = 'none';
             function hourToPixel(h) {
                 // Map hour 7 to x=0, hour 24 to x=elWidthPx+EXTRA*2
                 return ((h - 7) / (24 - 7)) * (elWidthPx + EXTRA * 2);
@@ -361,6 +362,8 @@ for (const block of blocks) {
         svg.style.top = '0';
         svg.style.width = '100%';
         svg.style.height = '100%';
+        svg.style.zIndex = 20;
+        svg.style.pointerEvents = 'none';
 
         // Use pixel-based viewBox for uniform corner radius
         const vwPx = document.documentElement.clientWidth / 100;
