@@ -31,6 +31,15 @@ function hourToPercent(h) {
     return (h - 7) / (24 - 7) * 100;
 }
 
+function darkenColor(hexColor, percent) {
+    const num = parseInt(hexColor.replace('#',''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.max(0, (num >> 16) - amt);
+    const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+    const B = Math.max(0, (num & 0x0000FF) - amt);
+    return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+}
+
 function roundedPolygonPath(points, radii) {
     const pts = [{ ...points[0], r: radii[0] }];
     for (let i = 1; i < points.length; i++) {
@@ -74,6 +83,48 @@ async function init() {
 const blocks = DATA.trim().split('---');
 const container = document.getElementById('container');
 container.style.marginTop = TOP_MARGIN + 'px';
+
+// Create legend at the top
+const legend = document.createElement('div');
+legend.style.display = 'flex';
+legend.style.alignItems = 'center';
+legend.style.gap = '40px';
+legend.style.height = '50px';
+legend.style.marginTop = '20px';
+legend.style.marginRight = '60px';
+legend.style.justifyContent = 'flex-end';
+
+const legendItems = [
+    { color: COLOR_LINE_1, letter: 'l' },
+    { color: COLOR_LINE_2, letter: 'h' },
+    { color: COLOR_LINE_3, letter: 'i' }
+];
+
+for (const item of legendItems) {
+    const legendItem = document.createElement('div');
+    legendItem.style.display = 'flex';
+    legendItem.style.alignItems = 'center';
+    legendItem.style.gap = '8px';
+
+    const circle = document.createElement('div');
+    circle.style.width = '20px';
+    circle.style.height = '20px';
+    circle.style.borderRadius = '50%';
+    circle.style.backgroundColor = item.color;
+    circle.style.border = '2px solid ' + darkenColor(item.color, 50);
+    circle.style.boxSizing = 'border-box';
+
+    const letter = document.createElement('span');
+    letter.style.fontSize = '16px';
+    letter.style.fontWeight = 'bold';
+    letter.textContent = item.letter;
+
+    legendItem.appendChild(circle);
+    legendItem.appendChild(letter);
+    legend.appendChild(legendItem);
+}
+
+container.parentNode.insertBefore(legend, container);
 
 for (const block of blocks) {
     const lines = block.trim().split('\n');
