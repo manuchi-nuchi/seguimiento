@@ -13,8 +13,8 @@ const COLOR_LINE_1 = '#ffa3eb';
 const COLOR_LINE_2 = '#ad9eff';
 const COLOR_LINE_3 = '#ffc072';
 
-const COLOR_BG_OFF = '#fcfffe';
-const COLOR_BG_ON = '#a0c4ff';
+const COLOR_BG = '#fcfffe';
+const COLOR_WORK_SESSION = '#a0c4ff';
 const VLINE_COLOR = '#7197d4';
 const VLINE_WIDTH = 2;
 
@@ -81,7 +81,10 @@ for (const block of blocks) {
     const name = lines[0].trim();
     // lines[1], [2], [3]: pink, blue, orange lines (content ignored)
     const points = lines[4].trim() ? lines[4].trim().split(/\s+/).map(Number) : [];
-    const transitions = lines[5].trim() ? lines[5].trim().split(/\s+/).map(Number) : [];
+    const workSessions = lines[5].trim() ? lines[5].trim().split(/\s+/).map(s => {
+        const [x, y, z] = s.split(',').map(Number);
+        return { start: x, end: y, opacity: z / 100 };
+    }) : [];
     const rects = lines[6].trim() ? lines[6].trim().split(/\s+/).map(s => {
         const [x, y] = s.split(',').map(Number);
         var scaledY = y * 1.5;
@@ -166,27 +169,38 @@ for (const block of blocks) {
         inner.appendChild(svgBot);
     });
 
-    // Background bands (hard transitions)
-    let bgColor = COLOR_BG_OFF;
-    const stops = [];
-    for (const t of transitions) {
-        const pct = hourToPercent(t);
-        const nextColor = bgColor === COLOR_BG_OFF ? COLOR_BG_ON : COLOR_BG_OFF;
-        stops.push(bgColor + ' ' + pct + '%');
-        stops.push(nextColor + ' ' + pct + '%');
-        bgColor = nextColor;
-    }
-    stops.push(bgColor + ' 100%');
-    inner.style.background = 'linear-gradient(to right, ' + COLOR_BG_OFF + ' 0%, ' + stops.join(', ') + ')';
+    // Solid background
+    inner.style.background = COLOR_BG;
 
-    // Vertical lines at bg transitions
-    for (const t of transitions) {
+    // Work session rectangles on top of background
+    for (const session of workSessions) {
+        const rect = document.createElement('div');
+        rect.style.position = 'absolute';
+        rect.style.left = hourToPercent(session.start) + '%';
+        rect.style.right = (100 - hourToPercent(session.end)) + '%';
+        rect.style.top = '0';
+        rect.style.height = '100%';
+        rect.style.backgroundColor = COLOR_WORK_SESSION;
+        rect.style.opacity = session.opacity;
+        rect.style.zIndex = 1;
+        inner.appendChild(rect);
+    }
+
+    // Vertical lines at work session transitions
+    for (const session of workSessions) {
         const vline = document.createElement('div');
         vline.className = 'v-line';
-        vline.style.left = hourToPercent(t) + '%';
+        vline.style.left = hourToPercent(session.start) + '%';
         vline.style.width = VLINE_WIDTH + 'px';
         vline.style.backgroundColor = VLINE_COLOR;
         inner.appendChild(vline);
+
+        const vlineEnd = document.createElement('div');
+        vlineEnd.className = 'v-line';
+        vlineEnd.style.left = hourToPercent(session.end) + '%';
+        vlineEnd.style.width = VLINE_WIDTH + 'px';
+        vlineEnd.style.backgroundColor = VLINE_COLOR;
+        inner.appendChild(vlineEnd);
     }
 
     // 3 colored lines as hour,value pairs (drawn as SVG polylines)
