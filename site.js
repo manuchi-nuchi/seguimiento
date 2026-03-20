@@ -80,7 +80,7 @@ async function init() {
     const res = await fetch(GOOGLE_DOC_URL);
     DATA = await res.text();
 
-const blocks = DATA.trim().split('-');
+const blocks = DATA.trim().split(/\n-[^\n]*\n/);
 const container = document.getElementById('container');
 container.style.marginTop = TOP_MARGIN + 'px';
 
