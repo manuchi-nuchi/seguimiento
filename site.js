@@ -80,7 +80,7 @@ async function init() {
     const res = await fetch(GOOGLE_DOC_URL);
     DATA = await res.text();
 
-const blocks = DATA.trim().split('---');
+const blocks = DATA.trim().split('-');
 const container = document.getElementById('container');
 container.style.marginTop = TOP_MARGIN + 'px';
 
@@ -127,18 +127,33 @@ for (const item of legendItems) {
 container.parentNode.insertBefore(legend, container);
 
 for (const block of blocks) {
-    const lines = block.trim().split('\n');
-    if (lines.length < 7) continue;
+    const lines = block.trim().split('\n').filter(l => !l.trim().startsWith(':'));
+    if (lines.length < 4) continue;
     const name = lines[0].trim();
     // lines[1], [2], [3]: pink, blue, orange lines (content ignored)
-    const points = lines[4].trim() ? lines[4].trim().split(/\s+/).map(Number) : [];
-    const workSessions = lines[5].trim() ? lines[5].trim().split(/\s+/).map(s => {
+    // lines[4]=points, [5]=workSessions, [6]=rects — but blank lines may be omitted,
+    // so detect by format: points have no commas, workSessions have 3+ comma parts, rects have 2 comma parts
+    const remaining = [];
+    for (let i = 4; i < lines.length; i++) {
+        const l = lines[i].trim();
+        if (l) remaining.push(l);
+    }
+    let pointsRaw = '', workSessionsRaw = '', rectsRaw = '';
+    for (const r of remaining) {
+        const firstToken = r.split(/\s+/)[0];
+        const commaCount = (firstToken.match(/,/g) || []).length;
+        if (commaCount === 0) pointsRaw = r;
+        else if (commaCount >= 2) workSessionsRaw = r;
+        else if (commaCount === 1) rectsRaw = r;
+    }
+    const points = pointsRaw ? pointsRaw.split(/\s+/).map(Number) : [];
+    const workSessions = workSessionsRaw ? workSessionsRaw.split(/\s+/).map(s => {
         const parts = s.split(',');
         const [x, y, z] = parts.slice(0, 3).map(Number);
         let w = parts[3] || '';
         return { start: x, end: y, opacity: z / 100, topic: w };
     }) : [];
-    const rects = lines[6].trim() ? lines[6].trim().split(/\s+/).map(s => {
+    const rects = rectsRaw ? rectsRaw.split(/\s+/).map(s => {
         const [x, y] = s.split(',').map(Number);
         var scaledY = y * 1.5;
         return { x, y: scaledY };
