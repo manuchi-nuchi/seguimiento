@@ -78,7 +78,7 @@ const GOOGLE_DOC_URL = 'https://docs.google.com/document/d/1bFv__rkfud3QeKkt3E_F
 async function init() {
     let DATA;
     const res = await fetch(GOOGLE_DOC_URL);
-    DATA = await res.text();
+    DATA = (await res.text()).replace(/\r\n/g, '\n');
 
 const blocks = DATA.trim().split(/\n-[^\n]*\n/);
 const container = document.getElementById('container');
