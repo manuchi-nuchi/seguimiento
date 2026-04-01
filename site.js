@@ -128,13 +128,21 @@ container.parentNode.insertBefore(legend, container);
 
 for (const block of blocks) {
     const lines = block.trim().split('\n').filter(l => !l.trim().startsWith(':'));
-    if (lines.length < 4) continue;
+    if (lines.length < 1) continue;
     const name = lines[0].trim();
-    // lines[1], [2], [3]: pink, blue, orange lines (content ignored)
-    // lines[4]=points, [5]=workSessions, [6]=rects — but blank lines may be omitted,
-    // so detect by format: points have no commas, workSessions have 3+ comma parts, rects have 2 comma parts
+    // Collect the 3 curve slot lines dynamically.
+    // Google Docs TXT export adds an extra \n for blank paragraphs, so each blank
+    // curve definition appears as 2 blank lines. Skip the extra one after each blank slot.
+    const curveLines = [];
+    let ci = 1;
+    while (ci < lines.length && curveLines.length < 3) {
+        const l = lines[ci].trim();
+        curveLines.push(l);
+        ci++;
+        if (!l && ci < lines.length && !lines[ci].trim()) ci++;
+    }
     const remaining = [];
-    for (let i = 4; i < lines.length; i++) {
+    for (let i = ci; i < lines.length; i++) {
         const l = lines[i].trim();
         if (l) remaining.push(l);
     }
@@ -304,8 +312,12 @@ for (const block of blocks) {
     // 3 colored lines as hour,value pairs (drawn as SVG polylines)
     const lineColors = [COLOR_LINE_1, COLOR_LINE_2, COLOR_LINE_3];
     for (let idx = 0; idx < 3; idx++) {
-        const lineData = lines[1 + idx].trim();
-        if (!lineData) continue;
+        const lineData = (curveLines[idx] || '').trim();
+
+        if (!lineData){
+            console.log(`Line ${idx+1} is empty, skipping.`);
+            continue;
+        }
         let points;
         if (/^\d+(\.\d+)?$/.test(lineData)) {
             // Single number, treat as flat line from firsthour to lasthour
@@ -323,7 +335,10 @@ for (const block of blocks) {
                 return null;
             }).filter(Boolean);
         }
-        if (points.length < 1) continue;
+        if (points.length < 1){
+            console.log(`Line ${idx+1} has no valid points, skipping.`);
+            continue;
+        }
         // Ensure first point at 7h
         if (points[0].h > 7) {
             points.unshift({ h: 7, v: points[0].v });
