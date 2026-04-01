@@ -12,7 +12,7 @@ const TOP_MARGIN = 30;
 const COLOR_LINE_1 = '#ffa3eb';
 const COLOR_LINE_2 = '#ad9eff';
 const COLOR_LINE_3 = '#ffc072';
-const COLOR_LINE_4 = '#7ecb7e';
+const COLOR_LINE_4 = '#7ecba1';
 
 const COLOR_BG = '#fcfffe';
 const COLOR_WORK_SESSION = '#a0c4ff';
