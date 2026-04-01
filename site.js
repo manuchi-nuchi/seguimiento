@@ -12,6 +12,7 @@ const TOP_MARGIN = 30;
 const COLOR_LINE_1 = '#ffa3eb';
 const COLOR_LINE_2 = '#ad9eff';
 const COLOR_LINE_3 = '#ffc072';
+const COLOR_LINE_4 = '#7ecb7e';
 
 const COLOR_BG = '#fcfffe';
 const COLOR_WORK_SESSION = '#a0c4ff';
@@ -97,7 +98,8 @@ legend.style.justifyContent = 'flex-end';
 const legendItems = [
     { color: COLOR_LINE_1, letter: 'l' },
     { color: COLOR_LINE_2, letter: 'h' },
-    { color: COLOR_LINE_3, letter: 'i' }
+    { color: COLOR_LINE_3, letter: 'i' },
+    { color: COLOR_LINE_4, letter: 'e' }
 ];
 
 for (const item of legendItems) {
@@ -135,7 +137,7 @@ for (const block of blocks) {
     // curve definition appears as 2 blank lines. Skip the extra one after each blank slot.
     const curveLines = [];
     let ci = 1;
-    while (ci < lines.length && curveLines.length < 3) {
+    while (ci < lines.length && curveLines.length < 4) {
         const l = lines[ci].trim();
         curveLines.push(l);
         ci++;
@@ -310,8 +312,8 @@ for (const block of blocks) {
     }
 
     // 3 colored lines as hour,value pairs (drawn as SVG polylines)
-    const lineColors = [COLOR_LINE_1, COLOR_LINE_2, COLOR_LINE_3];
-    for (let idx = 0; idx < 3; idx++) {
+    const lineColors = [COLOR_LINE_1, COLOR_LINE_2, COLOR_LINE_3, COLOR_LINE_4];
+    for (let idx = 0; idx < 4; idx++) {
         const lineData = (curveLines[idx] || '').trim();
 
         if (!lineData){
