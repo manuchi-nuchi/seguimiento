@@ -401,12 +401,11 @@ for (const block of blocks) {
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', d.trim());
             path.setAttribute('fill', 'none');
-            path.setAttribute('stroke', lineColors[idx]);
+            path.setAttribute('stroke', darkenColor(lineColors[idx], 50));
             path.setAttribute('stroke-width', LINE_THICKNESS);
             path.setAttribute('stroke-linecap', 'round');
             path.setAttribute('stroke-linejoin', 'round');
-            path.setAttribute('stroke', '#000');
-            path.setAttribute('stroke-opacity', '0.25');
+            path.setAttribute('stroke-opacity', '0.8');
             svg.appendChild(path);
             // Overlay the colored stroke
             const colorPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -416,6 +415,7 @@ for (const block of blocks) {
             colorPath.setAttribute('stroke-width', LINE_THICKNESS - 2);
             colorPath.setAttribute('stroke-linecap', 'round');
             colorPath.setAttribute('stroke-linejoin', 'round');
+            colorPath.setAttribute('stroke-opacity', '0.8');
             svg.appendChild(colorPath);
             inner.appendChild(svg);
         });
