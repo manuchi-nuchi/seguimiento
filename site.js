@@ -295,7 +295,6 @@ for (const block of blocks) {
 
         // Tooltip for topic
         const tooltip = document.createElement('div');
-        tooltip.className = 'tooltip';
         tooltip.style.position = 'fixed';
         tooltip.style.background = '#333';
         tooltip.style.color = '#fff';
@@ -569,7 +568,6 @@ for (const block of blocks) {
         el.appendChild(dot);
 
         const tooltip = document.createElement('div');
-        tooltip.className = 'tooltip';
         tooltip.style.position = 'fixed';
         tooltip.style.background = '#333';
         tooltip.style.color = '#fff';
@@ -618,7 +616,3 @@ for (const block of blocks) {
 }
 
 init();
-
-window.addEventListener('scroll', () => {
-    document.querySelectorAll('.tooltip').forEach(t => t.style.display = 'none');
-}, { passive: true });
