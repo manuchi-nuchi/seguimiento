@@ -171,7 +171,15 @@ for (const block of blocks) {
         if (l) remaining.push(l);
     }
     let pointsRaw = '', workSessionsRaw = '', rectsRaw = '';
+    const cMarkers = [];
     for (const r of remaining) {
+        if (/^c\s+/i.test(r)) {
+            const parts = r.slice(1).trim().split(/\s+/);
+            const hour = parseFloat(parts[0]);
+            const text = parts.slice(1).join(' ');
+            cMarkers.push({ hour, text });
+            continue;
+        }
         const firstToken = r.split(/\s+/)[0];
         const commaCount = (firstToken.match(/,/g) || []).length;
         if (commaCount === 0) pointsRaw = r;
@@ -199,7 +207,7 @@ for (const block of blocks) {
     el.style.marginRight = 'calc(100vw - ' + ELEMENT_END + ')';
     el.style.width = 'calc(' + ELEMENT_END + ' - ' + ELEMENT_START + ')';
     el.style.minWidth = '600px'; // Ensure enough width for SVG
-    el.style.marginBottom = ELEMENT_GAP + 'px';
+    el.style.marginBottom = (ELEMENT_GAP + (cMarkers.length > 0 ? 40 : 0)) + 'px';
 
 
     // Inner container for clipping bands and lines
@@ -527,6 +535,63 @@ for (const block of blocks) {
         path.setAttribute('vector-effect', 'non-scaling-stroke');
         svg.appendChild(path);
         inner.appendChild(svg);
+    }
+
+    // c markers: gray squares below the element
+    const CMARKER_SIZE = 28;
+    for (const marker of cMarkers) {
+        const sq = document.createElement('div');
+        sq.style.position = 'absolute';
+        sq.style.width = CMARKER_SIZE + 'px';
+        sq.style.height = CMARKER_SIZE + 'px';
+        sq.style.borderRadius = '10px';
+        sq.style.backgroundColor = 'rgba(170,170,170,0.8)';
+        sq.style.border = '2px solid #777';
+        sq.style.boxSizing = 'border-box';
+        sq.style.left = `calc(${hourToPercent(marker.hour)}% - ${CMARKER_SIZE / 2}px)`;
+        sq.style.top = (ELEMENT_HEIGHT + 14) + 'px';
+        sq.style.cursor = 'pointer';
+        sq.style.zIndex = 10;
+
+        const CMARKER_DOT = 8;
+        const dot = document.createElement('div');
+        dot.style.position = 'absolute';
+        dot.style.width = CMARKER_DOT + 'px';
+        dot.style.height = CMARKER_DOT + 'px';
+        dot.style.borderRadius = '50%';
+        dot.style.backgroundColor = 'rgba(172,169,164,0.8)';
+        dot.style.border = '2px solid #777';
+        dot.style.boxSizing = 'border-box';
+        dot.style.left = `calc(${hourToPercent(marker.hour)}% - ${CMARKER_DOT / 2}px)`;
+        dot.style.top = (ELEMENT_HEIGHT + 14 - CMARKER_DOT - 4) + 'px';
+        dot.style.zIndex = 10;
+        el.appendChild(dot);
+
+        const tooltip = document.createElement('div');
+        tooltip.style.position = 'fixed';
+        tooltip.style.background = '#333';
+        tooltip.style.color = '#fff';
+        tooltip.style.padding = '8px 12px';
+        tooltip.style.borderRadius = '20px';
+        tooltip.style.fontSize = '14px';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.zIndex = 1000;
+        tooltip.style.display = 'none';
+        tooltip.style.whiteSpace = 'pre';
+        tooltip.textContent = marker.text.replace(/\\n/g, '\n');
+
+        sq.addEventListener('mouseover', () => { tooltip.style.display = 'block'; });
+        sq.addEventListener('mousemove', (e) => {
+            tooltip.style.left = (e.clientX + 10) + 'px';
+            tooltip.style.top = (e.clientY + 10) + 'px';
+        });
+        sq.addEventListener('mouseout', () => { tooltip.style.display = 'none'; });
+        sq.addEventListener('click', () => {
+            tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.body.appendChild(tooltip);
+        el.appendChild(sq);
     }
 
     container.appendChild(el);
