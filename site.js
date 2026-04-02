@@ -254,7 +254,7 @@ for (const block of blocks) {
         svgTop.style.position = 'absolute';
         svgTop.style.left = `calc(${hourToPercent(hour)}% - ${base/2}px)`;
         svgTop.style.top = '0';
-        svgTop.style.zIndex = 3;
+        svgTop.style.zIndex = 50;
         const pathTop = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         pathTop.setAttribute('d', curvedTrianglePath());
         pathTop.setAttribute('fill', 'black');
@@ -268,7 +268,7 @@ for (const block of blocks) {
         svgBot.style.position = 'absolute';
         svgBot.style.left = `calc(${hourToPercent(hour)}% - ${base/2}px)`;
         svgBot.style.bottom = '0';
-        svgBot.style.zIndex = 3;
+        svgBot.style.zIndex = 50;
         svgBot.style.transform = 'scaleY(-1)';
         const pathBot = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         pathBot.setAttribute('d', curvedTrianglePath());
@@ -462,7 +462,7 @@ for (const block of blocks) {
         dot.style.height = POINT_SIZE + 'px';
         dot.style.background = COLOR_POINT_FILL;
         dot.style.borderColor = COLOR_POINT_BORDER;
-        dot.style.zIndex = 99;
+        dot.style.zIndex = 100;
         el.appendChild(dot);
     });
 
