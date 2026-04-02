@@ -85,6 +85,8 @@ const blocks = DATA.trim().split(/\n-[^\n]*\n/);
 const container = document.getElementById('container');
 container.style.marginTop = TOP_MARGIN + 'px';
 
+const allTooltips = [];
+
 // Create legend at the top
 const legend = document.createElement('div');
 legend.style.display = 'flex';
@@ -292,6 +294,7 @@ for (const block of blocks) {
         rect.style.opacity = session.opacity;
         rect.style.zIndex = 10;
         rect.style.cursor = 'pointer';
+        rect.dataset.tooltipTrigger = '1';
 
         // Tooltip for topic
         const tooltip = document.createElement('div');
@@ -321,6 +324,7 @@ for (const block of blocks) {
         });
 
         document.body.appendChild(tooltip);
+        allTooltips.push(tooltip);
         inner.appendChild(rect);
     }
 
@@ -552,6 +556,7 @@ for (const block of blocks) {
         sq.style.top = (ELEMENT_HEIGHT + 14) + 'px';
         sq.style.cursor = 'pointer';
         sq.style.zIndex = 10;
+        sq.dataset.tooltipTrigger = '1';
 
         const CMARKER_DOT = 8;
         const dot = document.createElement('div');
@@ -591,6 +596,7 @@ for (const block of blocks) {
         });
 
         document.body.appendChild(tooltip);
+        allTooltips.push(tooltip);
         el.appendChild(sq);
     }
 
@@ -616,3 +622,9 @@ for (const block of blocks) {
 }
 
 init();
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-tooltip-trigger]')) {
+        allTooltips.forEach(t => t.style.display = 'none');
+    }
+});
