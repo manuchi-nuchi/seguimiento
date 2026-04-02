@@ -126,6 +126,28 @@ for (const item of legendItems) {
     legend.appendChild(legendItem);
 }
 
+const sessionLegendItem = document.createElement('div');
+sessionLegendItem.style.display = 'flex';
+sessionLegendItem.style.alignItems = 'center';
+sessionLegendItem.style.gap = '8px';
+
+const sessionSquare = document.createElement('div');
+sessionSquare.style.width = '20px';
+sessionSquare.style.height = '20px';
+sessionSquare.style.borderRadius = '4px';
+sessionSquare.style.backgroundColor = COLOR_WORK_SESSION;
+sessionSquare.style.border = '2px solid ' + darkenColor(COLOR_WORK_SESSION, 50);
+sessionSquare.style.boxSizing = 'border-box';
+
+const sessionLetter = document.createElement('span');
+sessionLetter.style.fontSize = '16px';
+sessionLetter.style.fontWeight = 'bold';
+sessionLetter.textContent = 'c';
+
+sessionLegendItem.appendChild(sessionSquare);
+sessionLegendItem.appendChild(sessionLetter);
+legend.appendChild(sessionLegendItem);
+
 container.parentNode.insertBefore(legend, container);
 
 for (const block of blocks) {
