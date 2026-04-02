@@ -217,7 +217,7 @@ for (const block of blocks) {
     // Baseline (horizontal line above bg on and vertical lines)
     const baseline = document.createElement('div');
     baseline.style.position = 'absolute';
-    baseline.style.left = 0;
+    baseline.style.left = '0';
     baseline.style.width = '100%';
     baseline.style.top = '50%';
     baseline.style.transform = 'translateY(-50%)';
