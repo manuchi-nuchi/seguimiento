@@ -152,6 +152,7 @@ legend.appendChild(sessionLegendItem);
 
 container.parentNode.insertBefore(legend, container);
 
+let _maskId = 0;
 for (const block of blocks) {
     const lines = block.trim().split('\n').filter(l => !l.trim().startsWith(':'));
     if (lines.length < 1) continue;
@@ -432,26 +433,78 @@ for (const block of blocks) {
                     d += `C${c1x},${c1y} ${c2x},${c2y} ${x},${y} `;
                 }
             }
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', d.trim());
-            path.setAttribute('fill', 'none');
-            path.setAttribute('stroke', darkenColor(lineColors[idx], 50));
-            path.setAttribute('stroke-width', LINE_THICKNESS);
-            path.setAttribute('stroke-linecap', 'round');
-            path.setAttribute('stroke-linejoin', 'round');
-            path.setAttribute('stroke-opacity', '1');
-            svg.appendChild(path);
-            // Overlay the colored stroke
+            // Build closed shape path offset from centerline by LINE_THICKNESS/2
+            function bezPt(p0, p1, p2, p3, t) {
+                const u = 1 - t;
+                return {
+                    x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
+                    y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y
+                };
+            }
+            function bezTan(p0, p1, p2, p3, t) {
+                const u = 1 - t;
+                return {
+                    x: 3*(u*u*(p1.x-p0.x) + 2*u*t*(p2.x-p1.x) + t*t*(p3.x-p2.x)),
+                    y: 3*(u*u*(p1.y-p0.y) + 2*u*t*(p2.y-p1.y) + t*t*(p3.y-p2.y))
+                };
+            }
+            const SHAPE_SAMPLES = 20;
+            const halfW = LINE_THICKNESS / 2;
+            const topPts = [], botPts = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const p0 = { x: hourToPixel(points[i].h), y: ELEMENT_HEIGHT * (1 - points[i].v / 10) };
+                const p3 = { x: hourToPixel(points[i+1].h), y: ELEMENT_HEIGHT * (1 - points[i+1].v / 10) };
+                const segHandle = (p3.x - p0.x) * HANDLE_FRAC;
+                const p1 = { x: p0.x + segHandle, y: p0.y };
+                const p2 = { x: p3.x - segHandle, y: p3.y };
+                const n = (i === points.length - 2) ? SHAPE_SAMPLES + 1 : SHAPE_SAMPLES;
+                for (let s = 0; s < n; s++) {
+                    const t = s / SHAPE_SAMPLES;
+                    const pt = bezPt(p0, p1, p2, p3, t);
+                    const tan = bezTan(p0, p1, p2, p3, t);
+                    const len = Math.hypot(tan.x, tan.y);
+                    if (len < 1e-6) continue;
+                    const nx = -tan.y / len, ny = tan.x / len;
+                    topPts.push({ x: pt.x + nx * halfW, y: pt.y + ny * halfW });
+                    botPts.push({ x: pt.x - nx * halfW, y: pt.y - ny * halfW });
+                }
+            }
+            let shapePath = `M${topPts[0].x},${topPts[0].y}`;
+            for (let i = 1; i < topPts.length; i++) shapePath += ` L${topPts[i].x},${topPts[i].y}`;
+            for (let i = botPts.length - 1; i >= 0; i--) shapePath += ` L${botPts[i].x},${botPts[i].y}`;
+            shapePath += ' Z';
+
+            // actually paint the curve
             const colorPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            colorPath.setAttribute('d', d.trim());
-            colorPath.setAttribute('fill', 'none');
-            colorPath.setAttribute('stroke', lineColors[idx]);
-            colorPath.setAttribute('stroke-width', LINE_THICKNESS - 2);
+            colorPath.setAttribute('d', shapePath);
+            colorPath.setAttribute('fill', lineColors[idx]);
+            colorPath.setAttribute('opacity', 0.5);
+            colorPath.setAttribute('stroke', darkenColor(lineColors[idx], 50));
+            colorPath.setAttribute('stroke-width', 1);
             colorPath.setAttribute('stroke-linecap', 'round');
             colorPath.setAttribute('stroke-linejoin', 'round');
-            colorPath.setAttribute('stroke-opacity', '1');
             svg.appendChild(colorPath);
             inner.appendChild(svg);
+
+            const svgBase = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgBase.setAttribute('width', elWidthPx + EXTRA * 2);
+            svgBase.setAttribute('height', ELEMENT_HEIGHT);
+            svgBase.setAttribute('viewBox', `0 0 ${elWidthPx + EXTRA * 2} ${ELEMENT_HEIGHT}`);
+            svgBase.style.position = 'absolute';
+            svgBase.style.left = `-${EXTRA}px`;
+            svgBase.style.top = 0;
+            svgBase.style.width = `calc(100% + ${EXTRA * 2}px)`;
+            svgBase.style.height = '100%';
+            svgBase.style.zIndex = 19;
+            svgBase.style.pointerEvents = 'none';
+            const basePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            basePath.setAttribute('d', shapePath);
+            basePath.setAttribute('fill', lineColors[idx]);
+            basePath.setAttribute('stroke', darkenColor(lineColors[idx], 50));
+            basePath.setAttribute('stroke-width', 1);
+            basePath.setAttribute('opacity', 0.5);
+            svgBase.appendChild(basePath);
+            inner.appendChild(svgBase);
         });
     }
 
