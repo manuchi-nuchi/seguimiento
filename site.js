@@ -439,7 +439,7 @@ for (const block of blocks) {
             path.setAttribute('stroke-width', LINE_THICKNESS);
             path.setAttribute('stroke-linecap', 'round');
             path.setAttribute('stroke-linejoin', 'round');
-            path.setAttribute('stroke-opacity', '0.8');
+            path.setAttribute('stroke-opacity', '1');
             svg.appendChild(path);
             // Overlay the colored stroke
             const colorPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
