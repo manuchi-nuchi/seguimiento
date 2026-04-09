@@ -449,7 +449,7 @@ for (const block of blocks) {
             colorPath.setAttribute('stroke-width', LINE_THICKNESS - 2);
             colorPath.setAttribute('stroke-linecap', 'round');
             colorPath.setAttribute('stroke-linejoin', 'round');
-            colorPath.setAttribute('stroke-opacity', '0.8');
+            colorPath.setAttribute('stroke-opacity', '1');
             svg.appendChild(colorPath);
             inner.appendChild(svg);
         });
