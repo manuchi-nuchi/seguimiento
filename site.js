@@ -1,6 +1,6 @@
 
 const ELEMENT_BASELINE_COLOR = '#b1b1b1'; // light gray
-const ELEMENT_BASELINE_WIDTH = 1;//0.2; // px (thickness of the line)
+const ELEMENT_BASELINE_WIDTH = window.innerWidth < 768 ? 1 : 0.2; // px (thickness of the line)
 
 const ELEMENT_HEIGHT = 150;
 
