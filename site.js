@@ -316,19 +316,34 @@ for (const block of blocks) {
         tooltip.style.whiteSpace = 'nowrap';
         tooltip.textContent = session.topic.replace(/['"`]/g, '');
 
-        rect.addEventListener('mouseover', () => {
-            allTooltips.forEach(t => t.style.display = 'none');
-            tooltip.style.display = 'block';
-        });
+        if (onMobile()) {
+            rect.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const isVisible = tooltip.style.display !== 'none';
+                allTooltips.forEach(t => t.style.display = 'none');
+                if (!isVisible) {
+                    const r = rect.getBoundingClientRect();
+                    tooltip.style.left = (r.left + r.width / 2) + 'px';
+                    tooltip.style.top = (r.bottom + 8) + 'px';
+                    tooltip.style.display = 'block';
+                }
+            });
+        } else {
+            rect.addEventListener('mouseover', () => {
+                allTooltips.forEach(t => t.style.display = 'none');
+                tooltip.style.display = 'block';
+            });
 
-        rect.addEventListener('mousemove', (e) => {
-            tooltip.style.left = (e.clientX + 10) + 'px';
-            tooltip.style.top = (e.clientY + 10) + 'px';
-        });
+            rect.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.clientX + 10) + 'px';
+                tooltip.style.top = (e.clientY + 10) + 'px';
+            });
 
-        rect.addEventListener('mouseout', () => {
-            tooltip.style.display = 'none';
-        });
+            rect.addEventListener('mouseout', () => {
+                tooltip.style.display = 'none';
+            });
+        }
 
         document.body.appendChild(tooltip);
         allTooltips.push(tooltip);
