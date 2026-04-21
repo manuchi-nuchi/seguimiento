@@ -1,8 +1,11 @@
 
+function onMobile(){
+    var match = window.matchMedia('(pointer:coarse)');
+    return (match && match.matches);
+}
+
 const ELEMENT_BASELINE_COLOR = '#b1b1b1'; // light gray
-let ELEMENT_BASELINE_WIDTH = 0.2;
-if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-    ELEMENT_BASELINE_WIDTH = 1;
+const ELEMENT_BASELINE_WIDTH = onMobile() ? 1 : 0.2;
 
 const ELEMENT_HEIGHT = 150;
 
