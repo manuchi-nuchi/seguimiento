@@ -81,6 +81,8 @@ function roundedPolygonPath(points, radii) {
 
 const GOOGLE_DOC_URL = 'https://docs.google.com/document/d/1bFv__rkfud3QeKkt3E_FrutASBv4vxwb8HY1B9-zu6c/export?format=txt';
 
+const allTooltips = [];
+
 async function init() {
     let DATA;
     const res = await fetch(GOOGLE_DOC_URL);
@@ -89,8 +91,6 @@ async function init() {
 const blocks = DATA.trim().split(/\n-[^\n]*\n/);
 const container = document.getElementById('container');
 container.style.marginTop = TOP_MARGIN + 'px';
-
-const allTooltips = [];
 
 // Create legend at the top
 const legend = document.createElement('div');
@@ -317,6 +317,7 @@ for (const block of blocks) {
         tooltip.textContent = session.topic.replace(/['"`]/g, '');
 
         rect.addEventListener('mouseover', () => {
+            allTooltips.forEach(t => t.style.display = 'none');
             tooltip.style.display = 'block';
         });
 
@@ -357,7 +358,7 @@ for (const block of blocks) {
         const lineData = (curveLines[idx] || '').trim();
 
         if (!lineData){
-            console.log(`Line ${idx+1} is empty, skipping.`);
+            //console.log(`Line ${idx+1} is empty, skipping.`);
             continue;
         }
         let points;
@@ -643,15 +644,38 @@ for (const block of blocks) {
         tooltip.style.whiteSpace = 'pre';
         tooltip.textContent = marker.text.replace(/\\n/g, '\n');
 
-        sq.addEventListener('mouseover', () => { tooltip.style.display = 'block'; });
-        sq.addEventListener('mousemove', (e) => {
-            tooltip.style.left = (e.clientX + 10) + 'px';
-            tooltip.style.top = (e.clientY + 10) + 'px';
-        });
-        sq.addEventListener('mouseout', () => { tooltip.style.display = 'none'; });
-        sq.addEventListener('click', () => {
-            tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
-        });
+        if (onMobile()) {
+            sq.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const isVisible = tooltip.style.display !== 'none';
+                allTooltips.forEach(t => t.style.display = 'none');
+                if (!isVisible) {
+                    const rect = sq.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    tooltip.style.top = (rect.bottom + 8) + 'px';
+                    tooltip.style.display = 'block';
+                }
+            });
+        } else {
+            sq.addEventListener('mouseover', () => { allTooltips.forEach(t => t.style.display = 'none'); tooltip.style.display = 'block'; });
+            sq.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.clientX + 10) + 'px';
+                tooltip.style.top = (e.clientY + 10) + 'px';
+            });
+            sq.addEventListener('mouseout', () => { tooltip.style.display = 'none'; });
+            sq.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = tooltip.style.display !== 'none';
+                allTooltips.forEach(t => t.style.display = 'none');
+                if (!isVisible) {
+                    const rect = sq.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    tooltip.style.top = (rect.bottom + 8) + 'px';
+                    tooltip.style.display = 'block';
+                }
+            });
+        }
 
         document.body.appendChild(tooltip);
         allTooltips.push(tooltip);
@@ -686,3 +710,7 @@ document.addEventListener('click', (e) => {
         allTooltips.forEach(t => t.style.display = 'none');
     }
 });
+
+window.addEventListener('scroll', () => {
+    allTooltips.forEach(t => t.style.display = 'none');
+}, { passive: true });
