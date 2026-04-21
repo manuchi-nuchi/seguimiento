@@ -1,6 +1,6 @@
 
 const ELEMENT_BASELINE_COLOR = '#b1b1b1'; // light gray
-const ELEMENT_BASELINE_WIDTH = 0.2;
+let ELEMENT_BASELINE_WIDTH = 0.2;
 if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     ELEMENT_BASELINE_WIDTH = 1;
 
